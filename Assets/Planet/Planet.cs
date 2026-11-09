@@ -15,6 +15,9 @@ public class Planet : MonoBehaviour
     [SerializeField, Range(1, 8)] private int _octaves = 4;
     [SerializeField] private Vector3 _noiseOffset = Vector3.zero;
 
+    [Header("Mesh")]
+    [SerializeField] private bool _smoothShading = true;
+
     private Mesh _mesh;
 
     public int Octaves
@@ -61,6 +64,41 @@ public class Planet : MonoBehaviour
         Vector3 direction = point / distance;
         float surface = _radius + Relief(direction);
         return surface - distance;
+    }
+
+    public Vector3 Up(Vector3 worldPoint)
+    {
+        return (worldPoint - transform.position).normalized;
+    }
+
+    public Vector3 SurfacePoint(Vector3 worldPoint)
+    {
+        Vector3 direction = transform.InverseTransformPoint(worldPoint);
+        if (direction.sqrMagnitude < 0.0001f)
+        {
+            direction = Vector3.up;
+        }
+
+        direction.Normalize();
+        return transform.TransformPoint(direction * (_radius + Relief(direction)));
+    }
+
+    public Vector3 SurfaceNormal(Vector3 worldPoint)
+    {
+        Vector3 point = transform.InverseTransformPoint(worldPoint);
+        return transform.TransformDirection(LocalNormal(point)).normalized;
+    }
+
+    private Vector3 LocalNormal(Vector3 point)
+    {
+        const float step = 0.01f;
+
+        Vector3 gradient = new Vector3(
+            Density(point + Vector3.right * step) - Density(point - Vector3.right * step),
+            Density(point + Vector3.up * step) - Density(point - Vector3.up * step),
+            Density(point + Vector3.forward * step) - Density(point - Vector3.forward * step));
+
+        return (-gradient).normalized;
     }
 
     public float Relief(Vector3 direction)
@@ -167,6 +205,20 @@ public class Planet : MonoBehaviour
         _mesh.Clear();
         _mesh.SetVertices(vertices);
         _mesh.SetTriangles(triangles, 0);
-        _mesh.RecalculateNormals();
+
+        if (_smoothShading)
+        {
+            List<Vector3> normals = new List<Vector3>(vertices.Count);
+            for (int i = 0; i < vertices.Count; i++)
+            {
+                normals.Add(LocalNormal(vertices[i]));
+            }
+
+            _mesh.SetNormals(normals);
+        }
+        else
+        {
+            _mesh.RecalculateNormals();
+        }
     }
 }
