@@ -11,19 +11,14 @@ using UnityEngine;
 ///   3) reject points using filters: height, slope and an optional density mask,
 ///   4) instantiate prefabs (position, orientation along the surface, random scale).
 ///
-/// Attach this component to the same GameObject as the Planet.
+/// Attach this component to the same GameObject as the Planet MonoBehaviour.
 ///
-/// Required change in Planet.cs (one line, so we can read the base radius):
-///     public float Radius => _radius;
 /// </summary>
 public class PlanetScatter : MonoBehaviour
 {
     const string ContainerName = "Scattered";
     Transform Container = null;
 
-
-    // Safety net: a tiny minDistance on a big planet could generate millions of points
-    // and freeze the editor.
     const int MaxPoints = 50000;
 
     [Header("Planet")]
@@ -39,8 +34,8 @@ public class PlanetScatter : MonoBehaviour
 
     [Header("Filters")]
     [Tooltip("Terrain height relative to the base sphere radius, in world units " +
-             "(0 = base sphere, positive = hills, negative = valleys).")]
-    public float minHeight = 0.001f; // 0.f is ocean level
+             "(0 = sea level, positive = hills, negative = rifts).")]
+    public float minHeight = 0.001f;
     public float maxHeight = 2f;
     [Tooltip("Slope in degrees. 0 = flat ground, 90 = vertical cliff.")]
     [Range(0f, 90f)] public float minSlope = 0f;
@@ -88,8 +83,7 @@ public class PlanetScatter : MonoBehaviour
 
         float baseRadius = planet.Radius;
 
-        // 1) Poisson disk on the sphere. We only keep unit DIRECTIONS (points on a sphere of radius 1):
-        //    a direction is all we need to ask the planet "how high is the ground here?".
+        // Poisson disk on the sphere. We only keep unit DIRECTIONS (points on a sphere of radius 1):
         List<Vector3> directions = GeneratePoissonOnSphere(rng, baseRadius, minDistance, attemptsPerPoint);
 
         // Random offset for the density mask, so that different seeds give different patches.
@@ -106,27 +100,24 @@ public class PlanetScatter : MonoBehaviour
 
         foreach (Vector3 dir in directions)
         {
-            // Draw ALL the random numbers before filtering. If we drew them only for accepted
-            // points, changing a filter would shift the random stream and every surviving
-            // instance would get a new rotation/scale. This way, they stay stable.
+            // Draw ALL the random numbers before filtering.
             float rDensity = (float)rng.NextDouble();
             float rYaw = (float)rng.NextDouble();
             float rScale = (float)rng.NextDouble();
 
-            // 2) Terrain height at this point.
-            //    Planet.Relief(dir) is exactly what the planet adds to its base radius, so
-            //    the real surface is at distance (baseRadius + height) from the center.
+            // Terrain height at this point.
+            // Planet.Relief(dir) is exactly what the planet adds to its base radius, so
+            // the real surface is at distance (baseRadius + height) from the center.
             float height = planet.Relief(dir);
             if (height < minHeight || height > maxHeight) continue;
 
-            // 3) Slope: angle between the surface normal and the "vertical" of a planet,
-            //    which is the radial direction (center -> point).
+            // Slope: angle between the surface normal and the "vertical" of a planet,
+            // which is the radial direction (center -> point).
             Vector3 normal = ComputeSurfaceNormal(dir, baseRadius);
             float slope = Vector3.Angle(normal, dir);
             if (slope < minSlope || slope > maxSlope) continue;
 
-            // 4) Density mask. We use the 3D noise of the project (not Mathf.PerlinNoise, which
-            //    is 2D and would show a seam when wrapped around a sphere).
+            // Density mask.
             if (useDensityNoise)
             {
                 float n = Noise.Perlin(dir * densityNoiseScale + noiseOffset);
@@ -135,7 +126,7 @@ public class PlanetScatter : MonoBehaviour
                 if (rDensity > keepProbability) continue;
             }
 
-            // 5) Build the transform (in the Planet's local space).
+            // Build the transform in the Planet's local space.
             Vector3 localPos = dir * (baseRadius + height + surfaceOffset);
 
             // Blend between "away from the center" and "real surface normal".
@@ -261,9 +252,9 @@ public class PlanetScatter : MonoBehaviour
         float cellSize = minDist / Mathf.Sqrt(3f) * 0.99999f;
         float minDistSqr = minDist * minDist;
 
-        var grid = new Dictionary<Vector3Int, int>();   // cell -> index in 'points'
-        var points = new List<Vector3>();                // positions on the base sphere
-        var active = new List<int>();                    // points that may still have free space around them
+        Dictionary<Vector3Int, int> grid = new();    // cell -> index in 'points'
+        List<Vector3> points = new();                // positions on the base sphere
+        List<int> active = new();                    // points that may still have free space around them
 
         Vector3Int CellOf(Vector3 p)
         {
