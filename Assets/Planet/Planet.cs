@@ -7,6 +7,7 @@ public class Planet : MonoBehaviour
 {
     [Header("Sphere")]
     [SerializeField, Range(1f, 50f)] private float _radius = 10f;
+    public float Radius => _radius;
     [SerializeField, Range(8, 128)] private int _resolution = 48;
 
     [Header("Relief")]
