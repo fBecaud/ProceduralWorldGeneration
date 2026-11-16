@@ -250,9 +250,11 @@ MonoBehaviour:
   attemptsPerPoint: 15
   seed: 123
   minHeight: 0.001
-  maxHeight: 2
+  maxHeight: 0.86
   minSlope: 0
-  maxSlope: 90
+  maxSlope: 45
+  northPoleRatio: 0.1
+  southPoleRatio: 0.1
   normalSampleDistance: 0.25
   useDensityNoise: 1
   densityNoiseScale: 4
@@ -269,8 +271,17 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 1
-      value: 1
+      time: 0.3
+      value: 1.0000002
+      inSlope: 0
+      outSlope: -0.00000029855826
+      tangentMode: 1
+      weightedMode: 3
+      inWeight: 0.33333334
+      outWeight: 0.6654719
+    - serializedVersion: 3
+      time: 0.75
+      value: 0
       inSlope: 0
       outSlope: 0
       tangentMode: 0
