@@ -41,6 +41,8 @@ public class PlanetScatter : MonoBehaviour
     [Tooltip("Slope in degrees. 0 = flat ground, 90 = vertical cliff.")]
     [Range(0f, 90f)] public float minSlope = 0f;
     [Range(0f, 90f)] public float maxSlope = 35f;
+    [Range(0f, 1f)] public float northPoleRatio = 0.95f;
+    [Range(0f, 1f)] public float southPoleRatio = 0.95f;
     [Tooltip("Step used to estimate the surface normal (world units). Smaller = more precise, but noisier.")]
     [Min(0.01f)] public float normalSampleDistance = 0.25f;
 
@@ -105,6 +107,8 @@ public class PlanetScatter : MonoBehaviour
 
         foreach (Vector3 dir in directions)
         {
+            if (dir.y < -(1- southPoleRatio) || dir.y > (1 - northPoleRatio)) continue;
+            
             // Draw ALL the random numbers before filtering.
             float rDensity = (float)rng.NextDouble();
             float rYaw = (float)rng.NextDouble();
