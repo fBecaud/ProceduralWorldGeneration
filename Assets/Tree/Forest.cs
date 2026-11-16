@@ -103,4 +103,23 @@ public class Forest : MonoBehaviour
         tree.SetActive(true);
         _trees.Add(generator);
     }
+    public void Plant(in Vector3 localPosition, in Quaternion localRotation, in Vector3 localScale)
+    {
+        GameObject tree = new GameObject("Tree " + _trees.Count);
+        tree.SetActive(false);
+        tree.transform.SetParent(transform);
+        tree.transform.localPosition = localPosition;
+        tree.transform.localRotation = localRotation;
+        tree.transform.localScale = localScale;
+
+        tree.AddComponent<MeshFilter>();
+        tree.AddComponent<MeshRenderer>();
+        TreeGenerator generator = tree.AddComponent<TreeGenerator>();
+
+        float delay = TreeRandom.Value(_random) * _growthStagger;
+        generator.Setup(_planet, _settings, _random.Next(), _barkMaterial, _leafMaterial, _growthDuration, delay);
+
+        tree.SetActive(true);
+        _trees.Add(generator);
+    }
 }
