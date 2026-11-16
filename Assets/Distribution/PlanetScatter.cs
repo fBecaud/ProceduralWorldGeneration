@@ -25,8 +25,6 @@ public class PlanetScatter : MonoBehaviour
     [Tooltip("Planet to scatter on. Found automatically on this GameObject if left empty.")]
     public Planet planet;
     [Header("Forest")]
-    [Tooltip("Forest to scatter. Found automatically on this GameObject if left empty.")]
-    public Forest Forest = null;
 
     [Header("Poisson disk")]
     [Tooltip("Minimum straight-line distance between two points, in world units.")]
@@ -103,8 +101,7 @@ public class PlanetScatter : MonoBehaviour
             Container = new GameObject(ContainerName).transform;
             Container.SetParent(transform, false);
         }
-        if (!Forest)
-            Forest = FindFirstObjectByType<Forest>();
+
 
         foreach (Vector3 dir in directions)
         {
@@ -146,8 +143,7 @@ public class PlanetScatter : MonoBehaviour
             Vector3 localScale = Vector3.one * Mathf.Lerp(scaleRange.x, scaleRange.y, rScale);
 
             matrices.Add(transform.localToWorldMatrix * Matrix4x4.TRS(localPos, localRot, localScale));
-            Forest.Plant(localPos, localRot, localScale);
-            //Debug
+
             if (Container != null)
             {
                 GameObject go = Spawn(Container);
