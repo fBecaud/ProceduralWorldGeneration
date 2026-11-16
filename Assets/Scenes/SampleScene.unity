@@ -229,6 +229,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 298290030}
+  - {fileID: 2071043153}
+  - {fileID: 1156148516}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &163983408
@@ -243,10 +245,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc0283ca6da4e7f41b17c9391f310de4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlanetScatter
-  Forest: {fileID: 1666287368}
   planet: {fileID: 163983404}
-  minDistance: 2
-  attemptsPerPoint: 30
+  Forest: {fileID: 1666287368}
+  minDistance: 1.5
+  attemptsPerPoint: 15
   seed: 123
   minHeight: 0.001
   maxHeight: 2
@@ -661,6 +663,177 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &602480322
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 602480323}
+  - component: {fileID: 602480326}
+  - component: {fileID: 602480325}
+  - component: {fileID: 602480324}
+  m_Layer: 0
+  m_Name: Tree 0
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &602480323
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 602480322}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.060845833, y: 0.54636633, z: -0.0760569, w: 0.8318636}
+  m_LocalPosition: {x: 1.1002463, y: 10.32075, z: 0.1160195}
+  m_LocalScale: {x: 0.11430563, y: 0.11430563, z: 0.11430563}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1666287369}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &602480324
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 602480322}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f60fcafe415dd14fbb42ba6502cd165, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TreeGenerator
+  _planet: {fileID: 0}
+  _seed: 0
+  _settings:
+    TrunkHeight: 2
+    TrunkStraighten: 0.15
+    Flare: 1.6
+    FlareHeight: 0.7
+    CrownRadius: 2
+    CrownHeightRatio: 0.8
+    CrownLobes: 3
+    AttractorCount: 800
+    SegmentLength: 0.15
+    InfluenceRadius: 0.8
+    KillDistance: 0.25
+    Tropism: 0.2
+    Smoothing: 0.5
+    MaxIterations: 300
+    MaxNodes: 5000
+    Variation: 0.35
+    TrunkLean: 10
+    TrunkWobble: 0.15
+    BranchJitter: 0.2
+    ForkChance: 0.2
+    LowBranchChance: 0.35
+    HoleChance: 0.3
+    TwigChance: 0.6
+    TwigSegments: 2
+    TwigLength: 0.5
+    TwigMaxRadius: 0.05
+    TwigRadialSegments: 4
+    TipRadius: 0.015
+    PipeExponent: 2.2
+    RootCount: 5
+    RootLength: 1.8
+    RootDepth: 0.35
+    RootRadius: 0.45
+    RootWaves: 0.5
+    RootWobble: 0.3
+    LeavesPerNode: 2
+    LeafSize: 0.4
+    LeafMaxRadius: 0.04
+    LeafUpward: 0.5
+    LeafOutward: 0.5
+    LeafSpread: 0.6
+    LeafFold: 0.2
+    LeafCross: 1
+    SaplingScale: 0.2
+    LeafGrowSteps: 4
+    BarkDark: {r: 0.22, g: 0.15, b: 0.1, a: 1}
+    BarkLight: {r: 0.4, g: 0.31, b: 0.23, a: 1}
+    LeafColor: {r: 0.2, g: 0.5, b: 0.15, a: 1}
+    LeafColorVariation: {r: 0.45, g: 0.62, b: 0.2, a: 1}
+    ColorNoise: 0.15
+    Occlusion: 0.4
+    SunGradient: 0.15
+    RadialSegments: 10
+    BranchCollar: 1.8
+  _barkMaterial: {fileID: 0}
+  _leafMaterial: {fileID: 0}
+  _growth: 1
+  _animateOnPlay: 1
+  _growthDuration: 8
+  _growthDelay: 0
+  _rebuildsPerSecond: 15
+  _buildMesh: 1
+  _drawSkeleton: 1
+  _drawAttractors: 0
+--- !u!23 &602480325
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 602480322}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 0}
+  - {fileID: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &602480326
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 602480322}
+  m_Mesh: {fileID: 0}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -710,6 +883,208 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1156148515
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1156148516}
+  m_Layer: 0
+  m_Name: Scattered
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1156148516
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1156148515}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 163983407}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1348747145
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1348747146}
+  - component: {fileID: 1348747149}
+  - component: {fileID: 1348747148}
+  - component: {fileID: 1348747147}
+  m_Layer: 0
+  m_Name: Tree 0
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &1348747146
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1348747145}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.060845833, y: 0.54636633, z: -0.0760569, w: 0.8318636}
+  m_LocalPosition: {x: 1.1002463, y: 10.32075, z: 0.1160195}
+  m_LocalScale: {x: 0.11430563, y: 0.11430563, z: 0.11430563}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1666287369}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1348747147
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1348747145}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f60fcafe415dd14fbb42ba6502cd165, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TreeGenerator
+  _planet: {fileID: 0}
+  _seed: 0
+  _settings:
+    TrunkHeight: 2
+    TrunkStraighten: 0.15
+    Flare: 1.6
+    FlareHeight: 0.7
+    CrownRadius: 2
+    CrownHeightRatio: 0.8
+    CrownLobes: 3
+    AttractorCount: 800
+    SegmentLength: 0.15
+    InfluenceRadius: 0.8
+    KillDistance: 0.25
+    Tropism: 0.2
+    Smoothing: 0.5
+    MaxIterations: 300
+    MaxNodes: 5000
+    Variation: 0.35
+    TrunkLean: 10
+    TrunkWobble: 0.15
+    BranchJitter: 0.2
+    ForkChance: 0.2
+    LowBranchChance: 0.35
+    HoleChance: 0.3
+    TwigChance: 0.6
+    TwigSegments: 2
+    TwigLength: 0.5
+    TwigMaxRadius: 0.05
+    TwigRadialSegments: 4
+    TipRadius: 0.015
+    PipeExponent: 2.2
+    RootCount: 5
+    RootLength: 1.8
+    RootDepth: 0.35
+    RootRadius: 0.45
+    RootWaves: 0.5
+    RootWobble: 0.3
+    LeavesPerNode: 2
+    LeafSize: 0.4
+    LeafMaxRadius: 0.04
+    LeafUpward: 0.5
+    LeafOutward: 0.5
+    LeafSpread: 0.6
+    LeafFold: 0.2
+    LeafCross: 1
+    SaplingScale: 0.2
+    LeafGrowSteps: 4
+    BarkDark: {r: 0.22, g: 0.15, b: 0.1, a: 1}
+    BarkLight: {r: 0.4, g: 0.31, b: 0.23, a: 1}
+    LeafColor: {r: 0.2, g: 0.5, b: 0.15, a: 1}
+    LeafColorVariation: {r: 0.45, g: 0.62, b: 0.2, a: 1}
+    ColorNoise: 0.15
+    Occlusion: 0.4
+    SunGradient: 0.15
+    RadialSegments: 10
+    BranchCollar: 1.8
+  _barkMaterial: {fileID: 0}
+  _leafMaterial: {fileID: 0}
+  _growth: 1
+  _animateOnPlay: 1
+  _growthDuration: 8
+  _growthDelay: 0
+  _rebuildsPerSecond: 15
+  _buildMesh: 1
+  _drawSkeleton: 1
+  _drawAttractors: 0
+--- !u!23 &1348747148
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1348747145}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 0}
+  - {fileID: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &1348747149
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1348747145}
+  m_Mesh: {fileID: 0}
 --- !u!1 &1666287367
 GameObject:
   m_ObjectHideFlags: 0
@@ -814,8 +1189,213 @@ Transform:
   m_LocalPosition: {x: 35.04586, y: -0, z: -12.57907}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1348747146}
+  - {fileID: 602480323}
+  - {fileID: 1927361232}
   m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1927361231
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1927361232}
+  - component: {fileID: 1927361235}
+  - component: {fileID: 1927361234}
+  - component: {fileID: 1927361233}
+  m_Layer: 0
+  m_Name: Tree 0
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &1927361232
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1927361231}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.15542957, y: 0.88076127, z: 0.06747929, w: 0.44220793}
+  m_LocalPosition: {x: 1.974969, y: 10.037433, z: 2.7706115}
+  m_LocalScale: {x: 0.11737835, y: 0.11737835, z: 0.11737835}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1666287369}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1927361233
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1927361231}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f60fcafe415dd14fbb42ba6502cd165, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TreeGenerator
+  _planet: {fileID: 0}
+  _seed: 0
+  _settings:
+    TrunkHeight: 2
+    TrunkStraighten: 0.15
+    Flare: 1.6
+    FlareHeight: 0.7
+    CrownRadius: 2
+    CrownHeightRatio: 0.8
+    CrownLobes: 3
+    AttractorCount: 800
+    SegmentLength: 0.15
+    InfluenceRadius: 0.8
+    KillDistance: 0.25
+    Tropism: 0.2
+    Smoothing: 0.5
+    MaxIterations: 300
+    MaxNodes: 5000
+    Variation: 0.35
+    TrunkLean: 10
+    TrunkWobble: 0.15
+    BranchJitter: 0.2
+    ForkChance: 0.2
+    LowBranchChance: 0.35
+    HoleChance: 0.3
+    TwigChance: 0.6
+    TwigSegments: 2
+    TwigLength: 0.5
+    TwigMaxRadius: 0.05
+    TwigRadialSegments: 4
+    TipRadius: 0.015
+    PipeExponent: 2.2
+    RootCount: 5
+    RootLength: 1.8
+    RootDepth: 0.35
+    RootRadius: 0.45
+    RootWaves: 0.5
+    RootWobble: 0.3
+    LeavesPerNode: 2
+    LeafSize: 0.4
+    LeafMaxRadius: 0.04
+    LeafUpward: 0.5
+    LeafOutward: 0.5
+    LeafSpread: 0.6
+    LeafFold: 0.2
+    LeafCross: 1
+    SaplingScale: 0.2
+    LeafGrowSteps: 4
+    BarkDark: {r: 0.22, g: 0.15, b: 0.1, a: 1}
+    BarkLight: {r: 0.4, g: 0.31, b: 0.23, a: 1}
+    LeafColor: {r: 0.2, g: 0.5, b: 0.15, a: 1}
+    LeafColorVariation: {r: 0.45, g: 0.62, b: 0.2, a: 1}
+    ColorNoise: 0.15
+    Occlusion: 0.4
+    SunGradient: 0.15
+    RadialSegments: 10
+    BranchCollar: 1.8
+  _barkMaterial: {fileID: 0}
+  _leafMaterial: {fileID: 0}
+  _growth: 1
+  _animateOnPlay: 1
+  _growthDuration: 8
+  _growthDelay: 0
+  _rebuildsPerSecond: 15
+  _buildMesh: 1
+  _drawSkeleton: 1
+  _drawAttractors: 0
+--- !u!23 &1927361234
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1927361231}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 0}
+  - {fileID: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &1927361235
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1927361231}
+  m_Mesh: {fileID: 0}
+--- !u!1 &2071043152
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2071043153}
+  m_Layer: 0
+  m_Name: Scattered
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2071043153
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2071043152}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 163983407}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
