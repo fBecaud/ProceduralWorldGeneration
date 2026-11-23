@@ -15,6 +15,7 @@ public class Forest : MonoBehaviour
     [SerializeField, Range(1, 20)] private int _treesPerFrame = 2;
     [SerializeField] private float _growthDuration = 8f;
     [SerializeField] private float _growthStagger = 4f;
+    [SerializeField, Range(0.5f, 16f)] private float _rebuildBudgetMs = 4f;
 
     [Header("Test")]
     [SerializeField, Range(0, 500)] private int _testTrees = 0;
@@ -33,8 +34,14 @@ public class Forest : MonoBehaviour
         get { return _pending.Count; }
     }
 
+    private void OnValidate()
+    {
+        TreeScheduler.BudgetMilliseconds = _rebuildBudgetMs;
+    }
+
     private void Start()
     {
+        TreeScheduler.BudgetMilliseconds = _rebuildBudgetMs;
         _random = new System.Random(_seed);
 
         if (_testTrees > 0)

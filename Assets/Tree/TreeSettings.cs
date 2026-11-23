@@ -80,4 +80,50 @@ public class TreeSettings
     [Header("Mesh")]
     [Range(3, 16)] public int RadialSegments = 10;
     [Range(1f, 3f)] public float BranchCollar = 1.8f;
+
+    [Header("Performance")]
+    [Range(0.01f, 10f)] public float FullDetailScale = 1f;
+    [Range(0.1f, 1f)] public float MinDetail = 0.25f;
+    public bool LeafShadows = false;
+
+    public TreeSettings WithDetail(float detail)
+    {
+        TreeSettings scaled = (TreeSettings)MemberwiseClone();
+        if (detail >= 1f)
+        {
+            return scaled;
+        }
+
+        float coarse = Mathf.Lerp(1.6f, 1f, detail);
+        scaled.SegmentLength = SegmentLength * coarse;
+        scaled.KillDistance = KillDistance * coarse;
+        scaled.AttractorCount = Mathf.Max(60, Mathf.RoundToInt(AttractorCount * detail));
+        scaled.TwigChance = TwigChance * detail;
+
+        scaled.LeafCross = LeafCross && detail >= 0.6f;
+        scaled.LeavesPerNode = Mathf.Max(Mathf.Min(LeavesPerNode, 1), Mathf.RoundToInt(LeavesPerNode * detail));
+
+        int cardsBefore = LeavesPerNode * Cards(LeafCross);
+        int cardsAfter = scaled.LeavesPerNode * Cards(scaled.LeafCross);
+        if (cardsAfter > 0)
+        {
+            float ratio = (float)cardsBefore / cardsAfter;
+            scaled.LeafSize = LeafSize * Mathf.Sqrt(ratio) * (1f + (1f - detail) * 0.3f);
+        }
+
+        scaled.TwigRadialSegments = Mathf.Max(3, Mathf.RoundToInt(TwigRadialSegments * Mathf.Lerp(0.75f, 1f, detail)));
+        scaled.RadialSegments = Mathf.Max(scaled.TwigRadialSegments, Mathf.RoundToInt(RadialSegments * Mathf.Lerp(0.5f, 1f, detail)));
+
+        return scaled;
+    }
+
+    private static int Cards(bool cross)
+    {
+        if (cross)
+        {
+            return 2;
+        }
+
+        return 1;
+    }
 }
