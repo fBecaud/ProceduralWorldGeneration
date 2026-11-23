@@ -1,3 +1,4 @@
+using NUnit;
 using System.Collections;
 using UnityEngine;
 
@@ -10,14 +11,26 @@ public class TreeSeed : MonoBehaviour
     public bool bActivateOnEnable = false;
     public bool bActive = false;
     public SphereCollider activationSphereCollider;
+    public Transform SeedRenderer;
+    
+    private Transform activeTree = null;
+
     float startRadius;
     public float maxRadius = 6f;
     public float durationToGrow = 120f;
 
+    float startSeedScale;
+    public float minSeedScale = 0.01f;
+    public float durationToShrink = 3f;
+    
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        activationSphereCollider = GetComponent<SphereCollider>();
+        if (!activationSphereCollider)
+            activationSphereCollider = GetComponent<SphereCollider>();
+        if (!SeedRenderer)
+            SeedRenderer = transform.GetChild(0);
+        startSeedScale = SeedRenderer.localScale.magnitude;
         startRadius = activationSphereCollider.radius;
         if (!Forest)
             Forest = FindFirstObjectByType<Forest>();
@@ -31,8 +44,11 @@ public class TreeSeed : MonoBehaviour
         if (bActive)
             return;
         bActive = true;
-        Forest.Plant(transform.localPosition, transform.localRotation, transform.localScale);
-        StartCoroutine(RadiusAugment(startRadius, maxRadius, durationToGrow));
+        activeTree = Forest.Plant(transform.localPosition, transform.localRotation, transform.localScale).transform;
+        if (activationSphereCollider)
+            StartCoroutine(RadiusAugment(startRadius, maxRadius, durationToGrow));
+        if (SeedRenderer)
+            StartCoroutine(SeedShrink(startSeedScale, minSeedScale, durationToShrink));
     }
 
     IEnumerator RadiusAugment(float start, float end, float duration)
@@ -52,10 +68,32 @@ public class TreeSeed : MonoBehaviour
         // Garantit que la valeur finale est exacte à la fin des 5 secondes
         activationSphereCollider.radius = end;
     }
+    IEnumerator SeedShrink(float start, float end, float duration)
+    {
+        float timeSinceStart = 0f;
+
+        while (timeSinceStart < duration)
+        {
+            timeSinceStart += Time.deltaTime;
+
+            float progression = timeSinceStart / duration;
+            float scale = Mathf.Lerp(start, end, progression);
+            SeedRenderer.localScale = new Vector3(scale, scale, scale);
+            yield return null;
+        }
+
+        // Garantit que la valeur finale est exacte à la fin des 5 secondes
+        SeedRenderer.localScale = new Vector3(end, end, end);
+    }
     public void Deactivate()
     {
+        if (!bActive)
+            return;
         activationSphereCollider.radius = startRadius;
+        SeedRenderer.localScale = new Vector3(startSeedScale, startSeedScale, startSeedScale);
         bActive = false;
+        Forest.UnPlant(activeTree);
+        activeTree = null;
     }
     //Test for 
     private void OnEnable()
