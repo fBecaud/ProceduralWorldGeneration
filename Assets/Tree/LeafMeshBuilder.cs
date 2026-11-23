@@ -16,26 +16,53 @@ public static class LeafMeshBuilder
             }
 
             TreeLeaf leaf = leaves[l];
-            int parent = skeleton.Nodes[leaf.Node].Parent;
-            Vector3 position = Vector3.Lerp(state.Positions[parent], state.Positions[leaf.Node], leaf.Along);
+            Vector3 position = Position(skeleton, state, leaf);
             float size = leaf.Size * scale;
 
             Color color = shading.Leaf(position, leaf.Shade);
             Vector3 faceNormal = Vector3.Cross(leaf.Side, leaf.Axis).normalized;
 
-            AddCard(data, settings, shading, position, leaf.Axis, leaf.Side, faceNormal, size, color);
+            AddCard(data, data.LeafTriangles, data.LeafStart, settings, shading, position, leaf.Axis, leaf.Side, faceNormal, size, color);
 
             if (settings.LeafCross)
             {
                 Vector3 crossNormal = Vector3.Cross(faceNormal, leaf.Axis).normalized;
-                AddCard(data, settings, shading, position, leaf.Axis, faceNormal, crossNormal, size, color);
+                AddCard(data, data.LeafTriangles, data.LeafStart, settings, shading, position, leaf.Axis, faceNormal, crossNormal, size, color);
             }
         }
     }
 
-    private static void AddCard(MeshData data, TreeSettings settings, TreeShading shading, Vector3 position, Vector3 axis, Vector3 side, Vector3 faceNormal, float size, Color color)
+    public static void BuildShadow(MeshData data, TreeSkeleton skeleton, GrowthState state, TreeSettings settings, TreeShading shading)
     {
-        int first = data.Vertices.Count - data.LeafStart;
+        List<TreeLeaf> leaves = skeleton.Leaves;
+        int stride = Mathf.Max(1, settings.ShadowLeafStride);
+        float enlarge = Mathf.Sqrt(stride);
+
+        for (int l = 0; l < leaves.Count; l += stride)
+        {
+            float scale = state.LeafScales[l];
+            if (scale <= 0f)
+            {
+                continue;
+            }
+
+            TreeLeaf leaf = leaves[l];
+            Vector3 position = Position(skeleton, state, leaf);
+            Vector3 faceNormal = Vector3.Cross(leaf.Side, leaf.Axis).normalized;
+
+            AddCard(data, data.ShadowTriangles, 0, settings, shading, position, leaf.Axis, leaf.Side, faceNormal, leaf.Size * scale * enlarge, Color.black);
+        }
+    }
+
+    private static Vector3 Position(TreeSkeleton skeleton, GrowthState state, TreeLeaf leaf)
+    {
+        int parent = skeleton.Nodes[leaf.Node].Parent;
+        return Vector3.Lerp(state.Positions[parent], state.Positions[leaf.Node], leaf.Along);
+    }
+
+    private static void AddCard(MeshData data, List<int> triangles, int indexBase, TreeSettings settings, TreeShading shading, Vector3 position, Vector3 axis, Vector3 side, Vector3 faceNormal, float size, Color color)
+    {
+        int first = data.Vertices.Count - indexBase;
 
         Vector3 tip = axis * size;
         Vector3 half = axis * size * 0.5f;
@@ -59,20 +86,20 @@ public static class LeafMeshBuilder
         data.Uvs.Add(new Vector2(0.5f, 1f));
         data.Uvs.Add(new Vector2(0f, 0.5f));
 
-        data.LeafTriangles.Add(first);
-        data.LeafTriangles.Add(first + 1);
-        data.LeafTriangles.Add(first + 2);
+        triangles.Add(first);
+        triangles.Add(first + 1);
+        triangles.Add(first + 2);
 
-        data.LeafTriangles.Add(first);
-        data.LeafTriangles.Add(first + 2);
-        data.LeafTriangles.Add(first + 3);
+        triangles.Add(first);
+        triangles.Add(first + 2);
+        triangles.Add(first + 3);
 
-        data.LeafTriangles.Add(first);
-        data.LeafTriangles.Add(first + 2);
-        data.LeafTriangles.Add(first + 1);
+        triangles.Add(first);
+        triangles.Add(first + 2);
+        triangles.Add(first + 1);
 
-        data.LeafTriangles.Add(first);
-        data.LeafTriangles.Add(first + 3);
-        data.LeafTriangles.Add(first + 2);
+        triangles.Add(first);
+        triangles.Add(first + 3);
+        triangles.Add(first + 2);
     }
 }

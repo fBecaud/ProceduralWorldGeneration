@@ -16,7 +16,7 @@ public class TreeGenerator : MonoBehaviour
     [Header("Growth")]
     [SerializeField, Range(0f, 1f)] private float _growth = 1f;
     [SerializeField] private bool _animateOnPlay = true;
-    [SerializeField] private float _growthDuration = 8f;
+    [SerializeField] private AnimationCurve _growthCurve = AnimationCurve.EaseInOut(0f, 0f, 8f, 1f);
     [SerializeField] private float _growthDelay = 0f;
     [SerializeField] private float _rebuildsPerSecond = 15f;
 
@@ -27,10 +27,13 @@ public class TreeGenerator : MonoBehaviour
 
     private static readonly GrowthState _sharedState = new GrowthState();
     private static readonly MeshData _sharedData = new MeshData();
+    private static Material _shadowMaterial;
 
     private Mesh _mesh;
     private Mesh _leafMesh;
+    private Mesh _shadowMesh;
     private GameObject _leafObject;
+    private GameObject _shadowObject;
     private Material _fallbackBark;
     private Material _fallbackLeaf;
     private TreeSkeleton _skeleton;
@@ -52,7 +55,7 @@ public class TreeGenerator : MonoBehaviour
         get { return _growth; }
     }
 
-    public void Setup(Planet planet, TreeSettings settings, int seed, Material barkMaterial, Material leafMaterial, float growthDuration, float growthDelay)
+    public void Setup(Planet planet, TreeSettings settings, int seed, Material barkMaterial, Material leafMaterial, AnimationCurve growthCurve, float growthDelay)
     {
         _planet = planet;
         _settings = settings;
@@ -60,13 +63,13 @@ public class TreeGenerator : MonoBehaviour
         _barkMaterial = barkMaterial;
         _leafMaterial = leafMaterial;
         _animateOnPlay = true;
-        _growthDuration = growthDuration;
+        _growthCurve = growthCurve;
         _growthDelay = growthDelay;
     }
 
-    public void Grow(float duration, float delay)
+    public void Grow(AnimationCurve curve, float delay)
     {
-        _growthDuration = duration;
+        _growthCurve = curve;
         _growthDelay = delay;
         _growthStartTime = Time.time;
         _growth = 0f;
@@ -105,7 +108,7 @@ public class TreeGenerator : MonoBehaviour
 
         if (Application.isPlaying && _animateOnPlay)
         {
-            Grow(_growthDuration, _growthDelay);
+            Grow(_growthCurve, _growthDelay);
         }
         else
         {
@@ -157,13 +160,16 @@ public class TreeGenerator : MonoBehaviour
     {
         if (_growing)
         {
-            float elapsed = Time.time - _growthStartTime - _growthDelay;
-            _growth = Mathf.Clamp01(elapsed / Mathf.Max(_growthDuration, 0.01f));
+            float elapsed = Mathf.Max(Time.time - _growthStartTime - _growthDelay, 0f);
+            float end = CurveEnd(_growthCurve);
 
-            if (_growth >= 1f)
+            if (elapsed >= end)
             {
+                elapsed = end;
                 _growing = false;
             }
+
+            _growth = Mathf.Clamp01(_growthCurve.Evaluate(elapsed));
         }
 
         if (_queued)
@@ -203,6 +209,16 @@ public class TreeGenerator : MonoBehaviour
         }
     }
 
+    private static float CurveEnd(AnimationCurve curve)
+    {
+        if (curve == null || curve.length == 0)
+        {
+            return 0f;
+        }
+
+        return curve[curve.length - 1].time;
+    }
+
     private void Finish()
     {
         _skeleton = null;
@@ -216,6 +232,11 @@ public class TreeGenerator : MonoBehaviour
         if (_leafMesh != null)
         {
             _leafMesh.UploadMeshData(true);
+        }
+
+        if (_shadowMesh != null)
+        {
+            _shadowMesh.UploadMeshData(true);
         }
     }
 
@@ -249,9 +270,10 @@ public class TreeGenerator : MonoBehaviour
         if (!_buildMesh)
         {
             _mesh.Clear();
-            if (_leafMesh != null)
+            _leafMesh.Clear();
+            if (_shadowMesh != null)
             {
-                _leafMesh.Clear();
+                _shadowMesh.Clear();
             }
 
             return;
@@ -259,15 +281,7 @@ public class TreeGenerator : MonoBehaviour
 
         TreeGrowth.Evaluate(_skeleton, _effective, _growth, _sharedState);
         TreeMeshBuilder.Build(_sharedData, _skeleton, _sharedState, _effective);
-
-        if (_leafMesh != null)
-        {
-            _sharedData.ApplySplit(_mesh, _leafMesh);
-        }
-        else
-        {
-            _sharedData.Apply(_mesh);
-        }
+        _sharedData.Apply(_mesh, _leafMesh, _shadowMesh);
     }
 
     private void EnsureMeshes()
@@ -279,22 +293,11 @@ public class TreeGenerator : MonoBehaviour
             GetComponent<MeshFilter>().sharedMesh = _mesh;
         }
 
-        bool split = _effective != null && !_effective.LeafShadows;
-        if (!split)
-        {
-            DestroyLeafObject();
-            return;
-        }
+        GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
 
         if (_leafObject == null)
         {
-            _leafObject = new GameObject("Leaves");
-            _leafObject.hideFlags = HideFlags.HideAndDontSave;
-            _leafObject.transform.SetParent(transform, false);
-            _leafObject.AddComponent<MeshFilter>();
-
-            MeshRenderer leafRenderer = _leafObject.AddComponent<MeshRenderer>();
-            leafRenderer.shadowCastingMode = ShadowCastingMode.Off;
+            _leafObject = CreateChild("Leaves", ShadowCastingMode.Off);
         }
 
         if (_leafMesh == null || !_leafMesh.isReadable)
@@ -303,6 +306,38 @@ public class TreeGenerator : MonoBehaviour
             _leafMesh = CreateMesh("Tree Leaves");
             _leafObject.GetComponent<MeshFilter>().sharedMesh = _leafMesh;
         }
+
+        bool shadows = _effective != null && _effective.CastShadows;
+        if (!shadows)
+        {
+            DestroyShadowObject();
+            return;
+        }
+
+        if (_shadowObject == null)
+        {
+            _shadowObject = CreateChild("Shadow", ShadowCastingMode.ShadowsOnly);
+            _shadowObject.GetComponent<MeshRenderer>().receiveShadows = false;
+        }
+
+        if (_shadowMesh == null || !_shadowMesh.isReadable)
+        {
+            DestroyAsset(_shadowMesh);
+            _shadowMesh = CreateMesh("Tree Shadow");
+            _shadowObject.GetComponent<MeshFilter>().sharedMesh = _shadowMesh;
+        }
+    }
+
+    private GameObject CreateChild(string name, ShadowCastingMode shadowMode)
+    {
+        GameObject child = new GameObject(name);
+        child.hideFlags = HideFlags.HideAndDontSave;
+        child.transform.SetParent(transform, false);
+        child.AddComponent<MeshFilter>();
+
+        MeshRenderer renderer = child.AddComponent<MeshRenderer>();
+        renderer.shadowCastingMode = shadowMode;
+        return child;
     }
 
     private static Mesh CreateMesh(string name)
@@ -317,6 +352,7 @@ public class TreeGenerator : MonoBehaviour
     private void Cleanup()
     {
         DestroyLeafObject();
+        DestroyShadowObject();
         DestroyAsset(_mesh);
         DestroyAsset(_fallbackBark);
         DestroyAsset(_fallbackLeaf);
@@ -334,6 +370,18 @@ public class TreeGenerator : MonoBehaviour
         {
             DestroyAsset(_leafObject);
             _leafObject = null;
+        }
+    }
+
+    private void DestroyShadowObject()
+    {
+        DestroyAsset(_shadowMesh);
+        _shadowMesh = null;
+
+        if (_shadowObject != null)
+        {
+            DestroyAsset(_shadowObject);
+            _shadowObject = null;
         }
     }
 
@@ -406,22 +454,30 @@ public class TreeGenerator : MonoBehaviour
             leaf = _fallbackLeaf;
         }
 
-        MeshRenderer renderer = GetComponent<MeshRenderer>();
+        GetComponent<MeshRenderer>().sharedMaterial = bark;
 
         if (_leafObject != null)
         {
-            renderer.sharedMaterials = new Material[] { bark };
             _leafObject.GetComponent<MeshRenderer>().sharedMaterial = leaf;
-            return;
         }
 
-        Material[] current = renderer.sharedMaterials;
-        if (current.Length == 2 && current[0] == bark && current[1] == leaf)
+        if (_shadowObject != null)
         {
-            return;
+            Material shadow = ShadowMaterial();
+            _shadowObject.GetComponent<MeshRenderer>().sharedMaterials = new Material[] { shadow, shadow };
+        }
+    }
+
+    private static Material ShadowMaterial()
+    {
+        if (_shadowMaterial == null)
+        {
+            _shadowMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            _shadowMaterial.name = "Tree Shadow";
+            _shadowMaterial.hideFlags = HideFlags.DontSave;
         }
 
-        renderer.sharedMaterials = new Material[] { bark, leaf };
+        return _shadowMaterial;
     }
 
     private static Material CreateFallbackMaterial(string name)

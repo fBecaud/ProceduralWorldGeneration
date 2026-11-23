@@ -13,7 +13,7 @@ public class Forest : MonoBehaviour
 
     [Header("Spawning")]
     [SerializeField, Range(1, 20)] private int _treesPerFrame = 2;
-    [SerializeField] private float _growthDuration = 8f;
+    [SerializeField] private AnimationCurve _growthCurve = AnimationCurve.EaseInOut(0f, 0f, 8f, 1f);
     [SerializeField] private float _growthStagger = 4f;
     [SerializeField, Range(0.5f, 16f)] private float _rebuildBudgetMs = 4f;
 
@@ -105,7 +105,7 @@ public class Forest : MonoBehaviour
         TreeGenerator generator = tree.AddComponent<TreeGenerator>();
 
         float delay = TreeRandom.Value(_random) * _growthStagger;
-        generator.Setup(_planet, _settings, _random.Next(), _barkMaterial, _leafMaterial, _growthDuration, delay);
+        generator.Setup(_planet, _settings, _random.Next(), _barkMaterial, _leafMaterial, _growthCurve, delay);
 
         tree.SetActive(true);
         _trees.Add(generator);
@@ -124,7 +124,7 @@ public class Forest : MonoBehaviour
         TreeGenerator generator = tree.AddComponent<TreeGenerator>();
 
         float delay = TreeRandom.Value(_random) * _growthStagger;
-        generator.Setup(_planet, _settings, _random.Next(), _barkMaterial, _leafMaterial, _growthDuration, delay);
+        generator.Setup(_planet, _settings, _random.Next(), _barkMaterial, _leafMaterial, _growthCurve, delay);
 
         tree.SetActive(true);
         _trees.Add(generator);

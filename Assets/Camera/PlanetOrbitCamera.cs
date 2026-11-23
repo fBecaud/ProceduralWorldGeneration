@@ -14,17 +14,23 @@ public class PlanetOrbitCamera : MonoBehaviour
     [Header("Target")]
     [Tooltip("What to orbit around (usually the Planet transform).")]
     public Transform target;
-    [Tooltip("Optional. If set, the camera can never get inside the highest possible terrain.")]
+    [Tooltip("Optional. If set, the camera can never get inside the terrain below it.")]
     public Planet planet;
-    [Tooltip("Minimum gap kept between the camera and the highest possible terrain.")]
+    [Tooltip("Minimum gap kept between the camera and the terrain right below it.")]
     [Min(0f)] public float surfaceClearance = 2f;
 
     [Header("Polar coordinates")]
     public float distance = 35f;
     public float azimuth = 0f;
     [Range(-89f, 89f)] public float elevation = 20f;
-    [Min(0.1f)] public float minDistance = 14f;
+    public float minDistance = 14f;
     [Min(0.1f)] public float maxDistance = 90f;
+
+    [Header("Look offset")]
+    [Range(-89f, 89f)] public float closePitch = 30f;
+    [Range(-89f, 89f)] public float farPitch = 0f;
+    public AnimationCurve pitchCurve = AnimationCurve.Linear(0f, 0f, 1f, 1f);
+    [Range(-180f, 180f)] public float lookYaw = 0f;
 
     [Header("Speeds")]
     [Tooltip("Degrees per second.")]
@@ -42,44 +48,103 @@ public class PlanetOrbitCamera : MonoBehaviour
     public KeyCode zoomIn = KeyCode.I;
     public KeyCode zoomOut = KeyCode.O;
 
+    [Header("Debug")]
+    public bool showControls = true;
+
+    Quaternion orbit;
+    bool orbitReady;
+    GUIStyle controlsStyle;
+
+    void OnGUI()
+    {
+        if (!showControls) return;
+
+        if (controlsStyle == null)
+        {
+            controlsStyle = new GUIStyle(GUI.skin.label);
+            controlsStyle.fontSize = 12;
+            controlsStyle.normal.textColor = Color.white;
+        }
+
+        string text =
+            "Tourner : " + rotateLeft + " / " + rotateRight + " / " + rotateUp + " / " + rotateDown + "\n" +
+            "Zoomer : " + zoomIn + " / " + zoomOut;
+
+        GUI.Label(new Rect(10, 10, 400, 40), text, controlsStyle);
+    }
+
+    void OnValidate()
+    {
+        orbitReady = false;
+    }
+
+    void ResetOrbit()
+    {
+        float lat = elevation * Mathf.Deg2Rad;
+        float lon = azimuth * Mathf.Deg2Rad;
+
+        Vector3 direction = new Vector3(
+            Mathf.Cos(lat) * Mathf.Sin(lon),
+            Mathf.Sin(lat),
+            Mathf.Cos(lat) * Mathf.Cos(lon));
+
+        Vector3 north = new Vector3(
+            -Mathf.Sin(lat) * Mathf.Sin(lon),
+            Mathf.Cos(lat),
+            -Mathf.Sin(lat) * Mathf.Cos(lon));
+
+        orbit = Quaternion.LookRotation(-direction, north);
+        orbitReady = true;
+    }
+
     void LateUpdate()
     {
         if (target == null) return;
+        if (!orbitReady) ResetOrbit();
 
         float dt = Time.unscaledDeltaTime;
 
-        // Closest allowed distance: never inside the ground, even after the player raised it.
-        float lowerLimit = minDistance;
+        float reference = minDistance;
         if (planet != null)
-            lowerLimit = Mathf.Max(lowerLimit, planet.Radius + surfaceClearance);
-        float upperLimit = Mathf.Max(maxDistance, lowerLimit);
+            reference = Mathf.Max(reference, planet.Radius);
+        float upperLimit = Mathf.Max(maxDistance, reference);
 
         // The closer we are, the slower we turn.
-        float closeness = Mathf.InverseLerp(lowerLimit, upperLimit, distance); // 0 = close, 1 = far
+        float closeness = Mathf.InverseLerp(reference, upperLimit, distance); // 0 = close, 1 = far
         float speed = rotationSpeed * Mathf.Lerp(closeRotationFactor, 1f, closeness);
 
-        // Left arrow moves the camera to the left of the screen: azimuth decreases.
-        if (Input.GetKey(rotateLeft)) azimuth -= speed * dt;
-        if (Input.GetKey(rotateRight)) azimuth += speed * dt;
-        if (Input.GetKey(rotateUp)) elevation += speed * dt;
-        if (Input.GetKey(rotateDown)) elevation -= speed * dt;
+        float yaw = 0f;
+        float tilt = 0f;
+        if (Input.GetKey(rotateLeft)) yaw -= speed * dt;
+        if (Input.GetKey(rotateRight)) yaw += speed * dt;
+        if (Input.GetKey(rotateUp)) tilt += speed * dt;
+        if (Input.GetKey(rotateDown)) tilt -= speed * dt;
 
         if (Input.GetKey(zoomIn)) distance -= zoomSpeed * dt;
         if (Input.GetKey(zoomOut)) distance += zoomSpeed * dt;
 
-        azimuth = Mathf.Repeat(azimuth, 360f);                  // wraps around, no limit needed
-        elevation = Mathf.Clamp(elevation, -89f, 89f);          // stops before the poles (the 'up' vector would flip)
-        distance = Mathf.Clamp(distance, lowerLimit, upperLimit);
+        orbit = orbit * Quaternion.AngleAxis(yaw, Vector3.up) * Quaternion.AngleAxis(tilt, Vector3.right);
+        orbit = Quaternion.Normalize(orbit);
 
-        // Polar -> Cartesian.
-        float lat = elevation * Mathf.Deg2Rad;
-        float lon = azimuth * Mathf.Deg2Rad;
-        Vector3 offset = new Vector3(
-            Mathf.Cos(lat) * Mathf.Sin(lon),
-            Mathf.Sin(lat),
-            Mathf.Cos(lat) * Mathf.Cos(lon)) * distance;
+        // Closest allowed distance: never inside the ground right below the camera.
+        Vector3 direction = orbit * Vector3.back;
+        float lowerLimit = minDistance;
+        if (planet != null)
+            lowerLimit = Mathf.Max(lowerLimit, GroundDistance(direction) + surfaceClearance);
+
+        distance = Mathf.Clamp(distance, lowerLimit, Mathf.Max(upperLimit, lowerLimit));
+
+        Vector3 offset = direction * distance;
+        float farness = Mathf.InverseLerp(reference, upperLimit, distance);
+        float pitch = Mathf.LerpUnclamped(closePitch, farPitch, pitchCurve.Evaluate(farness));
 
         transform.position = target.position + offset;
-        transform.LookAt(target.position, Vector3.up);
+        transform.rotation = orbit * Quaternion.Euler(-pitch, lookYaw, 0f);
+    }
+
+    float GroundDistance(Vector3 direction)
+    {
+        Vector3 above = target.position + direction * (planet.Radius + 1f);
+        return Vector3.Distance(planet.SurfacePoint(above), target.position);
     }
 }

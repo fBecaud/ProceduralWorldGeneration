@@ -84,7 +84,8 @@ public class TreeSettings
     [Header("Performance")]
     [Range(0.01f, 10f)] public float FullDetailScale = 1f;
     [Range(0.1f, 1f)] public float MinDetail = 0.25f;
-    public bool LeafShadows = false;
+    public bool CastShadows = true;
+    [Range(1, 16)] public int ShadowLeafStride = 4;
 
     public TreeSettings WithDetail(float detail)
     {

@@ -6,6 +6,13 @@ public static class TreeMeshBuilder
 
         data.Clear();
         TubeMeshBuilder.Build(data, skeleton, state, settings, shading);
+
+        data.ShadowStart = data.Vertices.Count;
+        if (settings.CastShadows)
+        {
+            LeafMeshBuilder.BuildShadow(data, skeleton, state, settings, shading);
+        }
+
         data.LeafStart = data.Vertices.Count;
         LeafMeshBuilder.Build(data, skeleton, state, settings, shading);
     }
