@@ -70,7 +70,6 @@ public class PlanetScatter : MonoBehaviour
     public IReadOnlyList<Matrix4x4> Matrices => matrices;
     private void Start()
     {
-        Scatter();
     }
     // ------------------------------------------------------------------
     //  Public API
