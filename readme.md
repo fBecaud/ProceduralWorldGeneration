@@ -5,6 +5,7 @@ Unity version : 6000.3.6f1
 ## Controls
 Camera rotates around the planet.
 Keys (in editor): arrows = rotate, I / O = zoom in / out.
+Mouse: left click on a seed = activate it, right click = deactivate it.
 Arrows and Page keys are used on purpose: letter keys move around between QWERTY and AZERTY layouts.
 
 ## Distribution

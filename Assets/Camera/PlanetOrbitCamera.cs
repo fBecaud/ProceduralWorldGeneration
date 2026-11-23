@@ -54,10 +54,12 @@ public class PlanetOrbitCamera : MonoBehaviour
     Quaternion orbit;
     bool orbitReady;
     GUIStyle controlsStyle;
+    TreeSeedActivator seedActivator;
+    bool seedActivatorSearched;
 
     void OnGUI()
     {
-        if (!showControls) return;
+        if (!showControls || !ControlsOverlay.Visible) return;
 
         if (controlsStyle == null)
         {
@@ -66,11 +68,33 @@ public class PlanetOrbitCamera : MonoBehaviour
             controlsStyle.normal.textColor = Color.white;
         }
 
+        if (!seedActivatorSearched)
+        {
+            seedActivator = FindFirstObjectByType<TreeSeedActivator>();
+            seedActivatorSearched = true;
+        }
+
         string text =
             "Tourner : " + rotateLeft + " / " + rotateRight + " / " + rotateUp + " / " + rotateDown + "\n" +
             "Zoomer : " + zoomIn + " / " + zoomOut;
 
-        GUI.Label(new Rect(10, 10, 400, 40), text, controlsStyle);
+        if (seedActivator != null)
+        {
+            text +=
+                "\nPlanter une graine : " + MouseButtonName(seedActivator.mouseButtonToActivate) + "\n" +
+                "Retirer une graine : " + MouseButtonName(seedActivator.mouseButtonToDeActivate);
+        }
+
+        text += "\nMasquer l'interface : " + ControlsOverlay.ToggleKeyLabel;
+
+        GUI.Label(new Rect(10, 10, 400, 100), text, controlsStyle);
+    }
+
+    static string MouseButtonName(int button)
+    {
+        if (button == 0) return "Clic gauche";
+        if (button == 1) return "Clic droit";
+        return "Clic molette";
     }
 
     void OnValidate()
@@ -99,6 +123,8 @@ public class PlanetOrbitCamera : MonoBehaviour
 
     void LateUpdate()
     {
+        ControlsOverlay.HandleToggle();
+
         if (target == null) return;
         if (!orbitReady) ResetOrbit();
 

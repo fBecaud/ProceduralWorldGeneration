@@ -16,6 +16,18 @@ public class Planet : MonoBehaviour
     [SerializeField, Range(1, 8)] private int _octaves = 4;
     [SerializeField] private Vector3 _noiseOffset = Vector3.zero;
 
+    [Header("Beaches")]
+    [SerializeField, Range(0f, 1f)] private float _beachWidth = 0.2f;
+    [SerializeField, Range(0.05f, 1f)] private float _beachFlatness = 0.3f;
+
+    [Header("Mountains")]
+    [SerializeField] private float _mountainStart = 0.45f;
+    [SerializeField, Range(0.05f, 2f)] private float _mountainBlend = 0.35f;
+    [SerializeField, Range(0f, 3f)] private float _ridgeHeight = 0.9f;
+    [SerializeField, Range(0.5f, 12f)] private float _ridgeFrequency = 3f;
+    [SerializeField, Range(1, 6)] private int _ridgeOctaves = 3;
+    [SerializeField, Range(1f, 4f)] private float _ridgeSharpness = 2f;
+
     [Header("Mesh")]
     [SerializeField] private bool _smoothShading = true;
 
@@ -110,7 +122,54 @@ public class Planet : MonoBehaviour
             height += Octave(direction, i);
         }
 
-        return height * _amplitude;
+        height = FlattenBeach(height * _amplitude);
+        return height + Ridges(direction, height);
+    }
+
+    private float FlattenBeach(float height)
+    {
+        if (_beachWidth <= 0f)
+        {
+            return height;
+        }
+
+        float t = Mathf.SmoothStep(0f, 1f, Mathf.Abs(height) / _beachWidth);
+        return height * Mathf.Lerp(_beachFlatness, 1f, t);
+    }
+
+    private float Ridges(Vector3 direction, float height)
+    {
+        if (_ridgeHeight <= 0f)
+        {
+            return 0f;
+        }
+
+        float mask = Mathf.SmoothStep(0f, 1f, (height - _mountainStart) / _mountainBlend);
+        if (mask <= 0f)
+        {
+            return 0f;
+        }
+
+        float ridge = 0f;
+        float total = 0f;
+        float amplitude = 1f;
+        float frequency = _ridgeFrequency;
+        float weight = 1f;
+
+        for (int i = 0; i < _ridgeOctaves; i++)
+        {
+            Vector3 offset = _noiseOffset + Vector3.one * (37.1f * (i + 1));
+            float crest = 1f - Mathf.Abs(Noise.Perlin(direction * frequency + offset));
+            crest = Mathf.Pow(crest, _ridgeSharpness) * weight;
+
+            weight = Mathf.Clamp01(crest * 2f);
+            ridge += crest * amplitude;
+            total += amplitude;
+            amplitude *= 0.5f;
+            frequency *= 2f;
+        }
+
+        return mask * ridge / total * _ridgeHeight;
     }
 
     public float Octave(Vector3 direction, int i)
@@ -130,7 +189,7 @@ public class Planet : MonoBehaviour
 
     private void Generate()
     {
-        float size = 2f * (_radius + _amplitude * 2f) + 1f;
+        float size = 2f * (_radius + _amplitude * 2f + _ridgeHeight) + 1f;
         float cubeSize = size / _resolution;
         Vector3 gridOrigin = -Vector3.one * size / 2f;
 

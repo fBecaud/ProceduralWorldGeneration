@@ -38,7 +38,6 @@ public class OceanSphere : MonoBehaviour
 
         List<Vector3> vertices = new List<Vector3>(6 * side * side);
         List<Vector3> normals = new List<Vector3>(6 * side * side);
-        List<Vector2> depths = new List<Vector2>(6 * side * side);
         List<int> triangles = new List<int>(6 * n * n * 6);
 
         for (int f = 0; f < Faces.Length; f++)
@@ -57,7 +56,6 @@ public class OceanSphere : MonoBehaviour
 
                     vertices.Add(direction * localRadius);
                     normals.Add(direction);
-                    depths.Add(new Vector2(Depth(direction, worldRadius), 1f));
                 }
             }
 
@@ -96,24 +94,10 @@ public class OceanSphere : MonoBehaviour
 
         _mesh.SetVertices(vertices);
         _mesh.SetNormals(normals);
-        _mesh.SetUVs(1, depths);
         _mesh.SetTriangles(triangles, 0);
         _mesh.bounds = new Bounds(Vector3.zero, Vector3.one * localRadius * 2.4f);
 
         GetComponent<MeshFilter>().sharedMesh = _mesh;
-    }
-
-    private float Depth(Vector3 localDirection, float worldRadius)
-    {
-        if (_planet == null)
-        {
-            return 1f;
-        }
-
-        Vector3 world = transform.TransformDirection(localDirection);
-        Vector3 planetDirection = _planet.transform.InverseTransformDirection(world).normalized;
-        float ground = _planet.Radius + _planet.Relief(planetDirection);
-        return worldRadius - ground;
     }
 
     private void OnEnable()

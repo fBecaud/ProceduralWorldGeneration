@@ -59,6 +59,7 @@ Shader "Planet/Ocean"
             #pragma multi_compile_fog
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
             #include "PlanetNoise.hlsl"
 
             CBUFFER_START(UnityPerMaterial)
@@ -92,7 +93,6 @@ Shader "Planet/Ocean"
             CBUFFER_END
 
             #define WAVE_COUNT 6
-            #define NO_SHORE_DEPTH 1000.0
 
             static const float3 WaveDirections[WAVE_COUNT] =
             {
@@ -108,14 +108,13 @@ Shader "Planet/Ocean"
             struct Attributes
             {
                 float4 positionOS : POSITION;
-                float2 shore : TEXCOORD1;
             };
 
             struct Varyings
             {
                 float4 positionCS : SV_POSITION;
                 float3 positionWS : TEXCOORD0;
-                float depth : TEXCOORD1;
+                float eyeDepth : TEXCOORD1;
                 float waveHeight : TEXCOORD2;
                 float fogFactor : TEXCOORD3;
             };
@@ -200,7 +199,7 @@ Shader "Planet/Ocean"
                 Varyings output;
                 output.positionWS = positionWS;
                 output.positionCS = TransformWorldToHClip(positionWS);
-                output.depth = lerp(NO_SHORE_DEPTH, input.shore.x, step(0.5, input.shore.y));
+                output.eyeDepth = -TransformWorldToView(positionWS).z;
                 output.waveHeight = height;
                 output.fogFactor = ComputeFogFactor(output.positionCS.z);
                 return output;
@@ -219,7 +218,12 @@ Shader "Planet/Ocean"
                 float3 normalWS = SurfaceNormal(baseNormal, gradient + RippleGradient(relative));
                 float3 viewWS = GetWorldSpaceNormalizeViewDir(input.positionWS);
 
-                float depthFactor = saturate(input.depth / max(_DepthRange, 0.0001));
+                float2 screenUV = GetNormalizedScreenSpaceUV(input.positionCS);
+                float sceneDepth = LinearEyeDepth(SampleSceneDepth(screenUV), _ZBufferParams);
+                float thickness = max(sceneDepth - input.eyeDepth, 0.0);
+                float depth = thickness * saturate(dot(viewWS, baseNormal));
+
+                float depthFactor = saturate(depth / max(_DepthRange, 0.0001));
                 float4 water = lerp(_ShallowColor, _DeepColor, depthFactor);
 
                 Light light = GetMainLight(TransformWorldToShadowCoord(input.positionWS));
@@ -240,13 +244,13 @@ Shader "Planet/Ocean"
                 float alpha = lerp(water.a, 1.0, fresnel * 0.5);
 
                 float foamNoise = saturate(Fbm(relative * _FoamNoiseScale + float3(0.0, _Time.y * 0.3, 0.0)) + 0.5);
-                float shallow = 1.0 - saturate(input.depth / max(_BreakDepth, 0.0001));
+                float shallow = 1.0 - saturate(depth / max(_BreakDepth, 0.0001));
 
                 float crest = smoothstep(_CrestFoamThreshold, 1.0, input.waveHeight * 0.5 + 0.5);
                 crest *= smoothstep(0.35, 0.65, foamNoise) * _CrestFoam * lerp(_OpenSeaFoam, 1.0, shallow);
 
-                float shore = 1.0 - saturate(input.depth / max(_ShoreFoamDepth, 0.0001));
-                float bands = sin(input.depth * _ShoreFoamBands + _Time.y * _ShoreFoamSpeed) * 0.5 + 0.5;
+                float shore = 1.0 - saturate(depth / max(_ShoreFoamDepth, 0.0001));
+                float bands = sin(depth * _ShoreFoamBands + _Time.y * _ShoreFoamSpeed) * 0.5 + 0.5;
                 float shoreFoam = shore * smoothstep(0.5, 0.85, bands * foamNoise + shore * 0.6);
 
                 float foam = saturate(max(crest, shoreFoam));

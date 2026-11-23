@@ -472,7 +472,7 @@ public class TreeGenerator : MonoBehaviour
     {
         if (_shadowMaterial == null)
         {
-            _shadowMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            _shadowMaterial = new Material(Resources.Load<Material>("TreeShadow"));
             _shadowMaterial.name = "Tree Shadow";
             _shadowMaterial.hideFlags = HideFlags.DontSave;
         }
@@ -482,13 +482,7 @@ public class TreeGenerator : MonoBehaviour
 
     private static Material CreateFallbackMaterial(string name)
     {
-        Shader shader = Shader.Find("Universal Render Pipeline/Particles/Lit");
-        if (shader == null)
-        {
-            shader = Shader.Find("Universal Render Pipeline/Lit");
-        }
-
-        Material material = new Material(shader);
+        Material material = new Material(Resources.Load<Material>("TreeParticles"));
         material.name = name;
         material.hideFlags = HideFlags.DontSave;
 

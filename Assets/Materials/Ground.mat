@@ -87,12 +87,19 @@ Material:
     - _AlphaToMask: 0
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
+    - _BlendWidth: 0.03
+    - _BorderNoise: 0.12
+    - _BorderNoiseScale: 1.5
     - _BumpScale: 1
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
+    - _ColorNoise: 0.12
+    - _ColorNoiseScale: 0.8
     - _Cull: 2
     - _Cutoff: 0.5
     - _DetailAlbedoMapScale: 1
+    - _DetailNoise: 0.06
+    - _DetailNoiseScale: 8
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _DstBlendAlpha: 0
@@ -100,13 +107,21 @@ Material:
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
+    - _GrassContrast: 2.2
+    - _GrassDryScale: 0.9
+    - _GrassLevel: 1.055
+    - _GrassNoise: 1
+    - _GrassNoiseScale: 2.5
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005
+    - _PoleLimit: 0.95
     - _QueueControl: 0
     - _QueueOffset: 0
     - _Radius: 10
     - _ReceiveShadows: 1
+    - _RockLevel: 1.185
+    - _SandLevel: 1
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
@@ -120,6 +135,13 @@ Material:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _GrassColor: {r: 0.5019999, g: 0.788, b: 0.5019999, a: 1}
+    - _GrassDarkColor: {r: 0.23999995, g: 0.4699999, b: 0.21999997, a: 1}
+    - _GrassDryColor: {r: 0.74, g: 0.77, b: 0.39999998, a: 1}
+    - _PoleColor: {r: 1, g: 1, b: 1, a: 1}
+    - _RockColor: {r: 0.682, g: 0.7609999, b: 0.89, a: 1}
+    - _SandColor: {r: 0.976, g: 0.976, b: 0.733, a: 1}
+    - _SnowColor: {r: 0.898, g: 0.95699996, b: 0.976, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
