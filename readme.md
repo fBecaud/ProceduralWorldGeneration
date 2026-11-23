@@ -6,7 +6,15 @@ A small procedural planet you fly around in a little plane, planting seeds that 
 
 ![Flying over the planet](README/Img3.png)
 
-🎬 **Demo video:** [GenerationProcedural_BECAUD_PIRIS_MGP2.mp4](README/GenerationProcedural_BECAUD_PIRIS_MGP2.mp4)
+## 🎬 Demo
+
+<p align="center">
+  <a href="https://youtu.be/2f1IL7B062Q">
+    <img src="https://img.youtube.com/vi/2f1IL7B062Q/maxresdefault.jpg" width="80%" alt="Watch the demo on YouTube">
+  </a>
+  <br>
+  <em>▶ Click to watch the demo on YouTube</em>
+</p>
 
 ---
 
@@ -30,6 +38,11 @@ A small procedural planet you fly around in a little plane, planting seeds that 
 ### Seeds & growth
 - Activating a seed plants a tree that **grows from a sapling** while the seed shrinks away.
 - The seed's activation sphere slowly expands and **wakes up neighbouring seeds**, so the forest spreads across the planet over time.
+
+<p align="center">
+  <img src="README/TreeGrowth.gif" width="41%" alt="A tree growing from a seed">
+  <img src="README/ForestSpread.gif" width="48%" alt="The forest spreading across the planet">
+</p>
 
 <p align="center">
   <img src="README/Img5.png" width="30%" alt="Sapling">
