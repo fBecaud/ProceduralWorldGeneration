@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 
 [ExecuteAlways]
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
@@ -24,14 +25,19 @@ public class TreeGenerator : MonoBehaviour
     [SerializeField] private bool _drawSkeleton = true;
     [SerializeField] private bool _drawAttractors = false;
 
+    private static readonly GrowthState _sharedState = new GrowthState();
+    private static readonly MeshData _sharedData = new MeshData();
+
     private Mesh _mesh;
+    private Mesh _leafMesh;
+    private GameObject _leafObject;
     private Material _fallbackBark;
     private Material _fallbackLeaf;
     private TreeSkeleton _skeleton;
-    private readonly GrowthState _state = new GrowthState();
-    private readonly MeshData _meshData = new MeshData();
+    private TreeSettings _effective;
 
     private bool _growing;
+    private bool _queued;
     private float _growthStartTime;
     private float _lastRebuildTime;
     private float _builtGrowth = -1f;
@@ -65,35 +71,59 @@ public class TreeGenerator : MonoBehaviour
         _growthStartTime = Time.time;
         _growth = 0f;
         _growing = true;
+
+        if (_skeleton == null)
+        {
+            Generate();
+        }
+        else
+        {
+            RebuildMesh();
+        }
+
+        enabled = true;
+    }
+
+    public void ScheduledRebuild()
+    {
+        _queued = false;
+
+        if (_skeleton == null)
+        {
+            return;
+        }
+
         RebuildMesh();
     }
 
     private void OnEnable()
     {
-        Generate();
+        if (_mesh != null && _skeleton != null)
+        {
+            return;
+        }
 
         if (Application.isPlaying && _animateOnPlay)
         {
             Grow(_growthDuration, _growthDelay);
         }
+        else
+        {
+            Generate();
+        }
     }
 
     private void OnDisable()
     {
-        if (_mesh != null)
+        if (!Application.isPlaying)
         {
-            DestroyImmediate(_mesh);
+            Cleanup();
         }
+    }
 
-        if (_fallbackBark != null)
-        {
-            DestroyImmediate(_fallbackBark);
-        }
-
-        if (_fallbackLeaf != null)
-        {
-            DestroyImmediate(_fallbackLeaf);
-        }
+    private void OnDestroy()
+    {
+        Cleanup();
     }
 
     private void OnValidate()
@@ -113,12 +143,18 @@ public class TreeGenerator : MonoBehaviour
 
     private void Update()
     {
-        if (transform.hasChanged)
+        if (Application.isPlaying)
         {
-            Generate();
-            return;
+            PlayUpdate();
         }
+        else
+        {
+            EditorUpdate();
+        }
+    }
 
+    private void PlayUpdate()
+    {
         if (_growing)
         {
             float elapsed = Time.time - _growthStartTime - _growthDelay;
@@ -130,15 +166,56 @@ public class TreeGenerator : MonoBehaviour
             }
         }
 
-        if (_growth == _builtGrowth)
+        if (_queued)
         {
             return;
         }
 
-        float interval = 1f / Mathf.Max(_rebuildsPerSecond, 1f);
-        if (!_growing || Time.time - _lastRebuildTime >= interval)
+        if (_growth != _builtGrowth)
+        {
+            float interval = 1f / Mathf.Max(_rebuildsPerSecond, 1f);
+            if (!_growing || Time.time - _lastRebuildTime >= interval)
+            {
+                _queued = true;
+                TreeScheduler.Request(this);
+            }
+
+            return;
+        }
+
+        if (!_growing)
+        {
+            Finish();
+        }
+    }
+
+    private void EditorUpdate()
+    {
+        if (transform.hasChanged)
+        {
+            Generate();
+            return;
+        }
+
+        if (_growth != _builtGrowth)
         {
             RebuildMesh();
+        }
+    }
+
+    private void Finish()
+    {
+        _skeleton = null;
+        enabled = false;
+
+        if (_mesh != null)
+        {
+            _mesh.UploadMeshData(true);
+        }
+
+        if (_leafMesh != null)
+        {
+            _leafMesh.UploadMeshData(true);
         }
     }
 
@@ -153,17 +230,11 @@ public class TreeGenerator : MonoBehaviour
 
         transform.hasChanged = false;
 
-        _skeleton = TreeSkeletonBuilder.Build(_settings, groundNormal, GroundHeight, _seed);
+        float detail = Mathf.Clamp(transform.lossyScale.y / _settings.FullDetailScale, _settings.MinDetail, 1f);
+        _effective = _settings.WithDetail(detail);
+        _skeleton = TreeSkeletonBuilder.Build(_effective, groundNormal, GroundHeight, _seed);
 
-        if (_mesh == null)
-        {
-            _mesh = new Mesh();
-            _mesh.name = "Tree";
-            _mesh.hideFlags = HideFlags.DontSave;
-            _mesh.MarkDynamic();
-            GetComponent<MeshFilter>().sharedMesh = _mesh;
-        }
-
+        EnsureMeshes();
         EnsureMaterials();
         RebuildMesh();
     }
@@ -173,14 +244,114 @@ public class TreeGenerator : MonoBehaviour
         _lastRebuildTime = Time.time;
         _builtGrowth = _growth;
 
+        EnsureMeshes();
+
         if (!_buildMesh)
         {
             _mesh.Clear();
+            if (_leafMesh != null)
+            {
+                _leafMesh.Clear();
+            }
+
             return;
         }
 
-        TreeGrowth.Evaluate(_skeleton, _settings, _growth, _state);
-        TreeMeshBuilder.Build(_mesh, _skeleton, _state, _settings, _meshData);
+        TreeGrowth.Evaluate(_skeleton, _effective, _growth, _sharedState);
+        TreeMeshBuilder.Build(_sharedData, _skeleton, _sharedState, _effective);
+
+        if (_leafMesh != null)
+        {
+            _sharedData.ApplySplit(_mesh, _leafMesh);
+        }
+        else
+        {
+            _sharedData.Apply(_mesh);
+        }
+    }
+
+    private void EnsureMeshes()
+    {
+        if (_mesh == null || !_mesh.isReadable)
+        {
+            DestroyAsset(_mesh);
+            _mesh = CreateMesh("Tree");
+            GetComponent<MeshFilter>().sharedMesh = _mesh;
+        }
+
+        bool split = _effective != null && !_effective.LeafShadows;
+        if (!split)
+        {
+            DestroyLeafObject();
+            return;
+        }
+
+        if (_leafObject == null)
+        {
+            _leafObject = new GameObject("Leaves");
+            _leafObject.hideFlags = HideFlags.HideAndDontSave;
+            _leafObject.transform.SetParent(transform, false);
+            _leafObject.AddComponent<MeshFilter>();
+
+            MeshRenderer leafRenderer = _leafObject.AddComponent<MeshRenderer>();
+            leafRenderer.shadowCastingMode = ShadowCastingMode.Off;
+        }
+
+        if (_leafMesh == null || !_leafMesh.isReadable)
+        {
+            DestroyAsset(_leafMesh);
+            _leafMesh = CreateMesh("Tree Leaves");
+            _leafObject.GetComponent<MeshFilter>().sharedMesh = _leafMesh;
+        }
+    }
+
+    private static Mesh CreateMesh(string name)
+    {
+        Mesh mesh = new Mesh();
+        mesh.name = name;
+        mesh.hideFlags = HideFlags.DontSave;
+        mesh.MarkDynamic();
+        return mesh;
+    }
+
+    private void Cleanup()
+    {
+        DestroyLeafObject();
+        DestroyAsset(_mesh);
+        DestroyAsset(_fallbackBark);
+        DestroyAsset(_fallbackLeaf);
+        _mesh = null;
+        _fallbackBark = null;
+        _fallbackLeaf = null;
+    }
+
+    private void DestroyLeafObject()
+    {
+        DestroyAsset(_leafMesh);
+        _leafMesh = null;
+
+        if (_leafObject != null)
+        {
+            DestroyAsset(_leafObject);
+            _leafObject = null;
+        }
+    }
+
+    private static void DestroyAsset(Object target)
+    {
+        if (target == null)
+        {
+            return;
+        }
+
+        if (Application.isPlaying)
+        {
+            Destroy(target);
+        }
+        else
+        {
+            DestroyImmediate(target);
+        }
     }
 
     private Vector3 SnapToPlanet()
@@ -236,6 +407,14 @@ public class TreeGenerator : MonoBehaviour
         }
 
         MeshRenderer renderer = GetComponent<MeshRenderer>();
+
+        if (_leafObject != null)
+        {
+            renderer.sharedMaterials = new Material[] { bark };
+            _leafObject.GetComponent<MeshRenderer>().sharedMaterial = leaf;
+            return;
+        }
+
         Material[] current = renderer.sharedMaterials;
         if (current.Length == 2 && current[0] == bark && current[1] == leaf)
         {
@@ -267,7 +446,7 @@ public class TreeGenerator : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        if (_skeleton == null)
+        if (_skeleton == null || _effective == null)
         {
             return;
         }
@@ -279,7 +458,7 @@ public class TreeGenerator : MonoBehaviour
             Gizmos.color = Color.yellow;
             for (int i = 0; i < _skeleton.Attractors.Count; i++)
             {
-                Gizmos.DrawCube(_skeleton.Attractors[i], Vector3.one * _settings.SegmentLength * 0.3f);
+                Gizmos.DrawCube(_skeleton.Attractors[i], Vector3.one * _effective.SegmentLength * 0.3f);
             }
         }
 

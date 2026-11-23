@@ -35,7 +35,7 @@ public static class LeafMeshBuilder
 
     private static void AddCard(MeshData data, TreeSettings settings, TreeShading shading, Vector3 position, Vector3 axis, Vector3 side, Vector3 faceNormal, float size, Color color)
     {
-        int first = data.Vertices.Count;
+        int first = data.Vertices.Count - data.LeafStart;
 
         Vector3 tip = axis * size;
         Vector3 half = axis * size * 0.5f;

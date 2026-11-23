@@ -784,6 +784,9 @@ MonoBehaviour:
     SunGradient: 0.15
     RadialSegments: 10
     BranchCollar: 1.8
+    FullDetailScale: 1
+    MinDetail: 0.25
+    LeafShadows: 0
   _barkMaterial: {fileID: 0}
   _leafMaterial: {fileID: 0}
   _growth: 1
@@ -819,7 +822,6 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
   - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -1004,6 +1006,9 @@ MonoBehaviour:
     SunGradient: 0.15
     RadialSegments: 10
     BranchCollar: 1.8
+    FullDetailScale: 1
+    MinDetail: 0.25
+    LeafShadows: 0
   _barkMaterial: {fileID: 0}
   _leafMaterial: {fileID: 0}
   _growth: 1
@@ -1039,7 +1044,6 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
   - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -1158,11 +1162,15 @@ MonoBehaviour:
     SunGradient: 0.15
     RadialSegments: 10
     BranchCollar: 1.8
+    FullDetailScale: 1
+    MinDetail: 0.25
+    LeafShadows: 0
   _barkMaterial: {fileID: 0}
   _leafMaterial: {fileID: 0}
   _treesPerFrame: 2
   _growthDuration: 8
   _growthStagger: 4
+  _rebuildBudgetMs: 4
   _testTrees: 0
 --- !u!4 &1666287369
 Transform:
@@ -1321,6 +1329,9 @@ MonoBehaviour:
     SunGradient: 0.15
     RadialSegments: 10
     BranchCollar: 1.8
+    FullDetailScale: 1
+    MinDetail: 0.25
+    LeafShadows: 0
   _barkMaterial: {fileID: 0}
   _leafMaterial: {fileID: 0}
   _growth: 1
@@ -1356,7 +1367,6 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
   - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0

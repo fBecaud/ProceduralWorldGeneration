@@ -11,12 +11,15 @@ public static class TubeMeshBuilder
     private static readonly List<Vector3> _positions = new List<Vector3>();
     private static readonly List<float> _radii = new List<float>();
     private static readonly List<bool> _roots = new List<bool>();
+    private static readonly List<int> _chain = new List<int>();
+    private static readonly Stack<int> _chainStarts = new Stack<int>();
 
     public static void Build(MeshData data, TreeSkeleton skeleton, GrowthState state, TreeSettings settings, TreeShading shading)
     {
         List<TreeNode> nodes = skeleton.Nodes;
-        List<int> chain = new List<int>();
-        Stack<int> chainStarts = new Stack<int>();
+        List<int> chain = _chain;
+        Stack<int> chainStarts = _chainStarts;
+        chainStarts.Clear();
 
         if (nodes.Count > 0 && state.Progress[0] > 0f)
         {
