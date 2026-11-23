@@ -110,7 +110,7 @@ public class Forest : MonoBehaviour
         tree.SetActive(true);
         _trees.Add(generator);
     }
-    public GameObject Plant(in Vector3 localPosition, in Quaternion localRotation, in Vector3 localScale)
+    public Transform Plant(in Vector3 localPosition, in Quaternion localRotation, in Vector3 localScale)
     {
         GameObject tree = new GameObject("Tree " + _trees.Count);
         tree.SetActive(false);
@@ -128,7 +128,7 @@ public class Forest : MonoBehaviour
 
         tree.SetActive(true);
         _trees.Add(generator);
-        return tree;
+        return tree.transform;
     }
     public void UnPlant(Transform tree)
     {

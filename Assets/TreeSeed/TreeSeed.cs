@@ -30,7 +30,7 @@ public class TreeSeed : MonoBehaviour
             activationSphereCollider = GetComponent<SphereCollider>();
         if (!SeedRenderer)
             SeedRenderer = transform.GetChild(0);
-        startSeedScale = SeedRenderer.localScale.magnitude;
+        startSeedScale = SeedRenderer.localScale.x;
         startRadius = activationSphereCollider.radius;
         if (!Forest)
             Forest = FindFirstObjectByType<Forest>();
@@ -44,11 +44,11 @@ public class TreeSeed : MonoBehaviour
         if (bActive)
             return;
         bActive = true;
-        activeTree = Forest.Plant(transform.localPosition, transform.localRotation, transform.localScale).transform;
+        activeTree = Forest.Plant(transform.localPosition, transform.localRotation, transform.localScale);
         if (activationSphereCollider)
             StartCoroutine(RadiusAugment(startRadius, maxRadius, durationToGrow));
         if (SeedRenderer)
-            StartCoroutine(SeedShrink(startSeedScale, minSeedScale, durationToShrink));
+            StartCoroutine(SeedShrink(startSeedScale*1.2f, minSeedScale, durationToShrink));
     }
 
     IEnumerator RadiusAugment(float start, float end, float duration)
